@@ -1,6 +1,6 @@
 {
   "name": "@boychibor/react-tabib",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Static analysis CLI for finding likely memory leaks and lifecycle misuse in React apps.",
   "license": "MIT",
   "bin": {
