@@ -25,27 +25,35 @@ The current implementation intentionally separates high-confidence checks from h
 Run directly with `npx` after publishing:
 
 ```bash
-npx react-tabib
+npx @hojiakbar/react-tabib
 ```
 
 Or install locally:
 
 ```bash
-npm install --save-dev react-tabib
+npm install --save-dev @hojiakbar/react-tabib
 ```
+
+After local installation, the executable is still `react-tabib` because the package keeps that `bin` name.
 
 ## Usage
 
 ```bash
+npx @hojiakbar/react-tabib
+npx @hojiakbar/react-tabib --path ./src
+npx @hojiakbar/react-tabib --format compact
+npx @hojiakbar/react-tabib --json
+npx @hojiakbar/react-tabib --severity high
+npx @hojiakbar/react-tabib --max-warnings 0
+npx @hojiakbar/react-tabib --ignore "storybook/**"
+npx @hojiakbar/react-tabib --config react-tabib.config.ts
+npx @hojiakbar/react-tabib --summary-only
+```
+
+If the package is installed in the current project, you can also run:
+
+```bash
 npx react-tabib
-npx react-tabib --path ./src
-npx react-tabib --format compact
-npx react-tabib --json
-npx react-tabib --severity high
-npx react-tabib --max-warnings 0
-npx react-tabib --ignore "storybook/**"
-npx react-tabib --config react-tabib.config.ts
-npx react-tabib --summary-only
 ```
 
 ## CLI flags
@@ -66,7 +74,7 @@ npx react-tabib --summary-only
 Create `react-tabib.config.ts` or `react-tabib.config.js`:
 
 ```ts
-import type { ReactTabibConfig } from 'react-tabib';
+import type { ReactTabibConfig } from '@hojiakbar/react-tabib';
 
 const config: ReactTabibConfig = {
   ignore: ['storybook/**'],
@@ -132,9 +140,7 @@ Recommended next actions
   "filesScanned": 12,
   "filesWithErrors": [],
   "skippedFiles": 0,
-  "rulesTriggered": [
-    "use-effect-timer-cleanup"
-  ],
+  "rulesTriggered": ["use-effect-timer-cleanup"],
   "summary": {
     "bySeverity": {
       "low": 0,
@@ -187,7 +193,7 @@ Heuristic:
 Use JSON output for machine parsing and fail on high-severity issues:
 
 ```bash
-npx react-tabib --json --severity high --max-warnings 0
+npx @hojiakbar/react-tabib --json --severity high --max-warnings 0
 ```
 
 ## Limitations
@@ -209,7 +215,7 @@ npm publish --access public
 
 Before publishing:
 
-- Make sure the package name `react-tabib` is available on npm
+- Make sure the scoped package name `@hojiakbar/react-tabib` is available to your npm account
 - Bump `version` in `package.json`
 - Verify the `bin` entry points to `dist/cli.js`
 
