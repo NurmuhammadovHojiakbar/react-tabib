@@ -1,10 +1,13 @@
 import fs from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import vm from 'node:vm';
 import ts from 'typescript';
 import { defaultConfig } from './defaults';
 import type { ReactTabibConfig, ReactTabibResolvedConfig } from '../types';
+
+const requireFromHere = createRequire(__filename);
 
 async function resolveConfigPath(cwd: string, explicitPath?: string): Promise<string | null> {
   if (explicitPath) {
@@ -59,7 +62,7 @@ async function loadConfigModule(configPath: string): Promise<ReactTabibConfig> {
     const context = vm.createContext({
       module,
       exports: module.exports,
-      require,
+      require: requireFromHere,
       __dirname: path.dirname(configPath),
       __filename: configPath,
       process,
@@ -69,7 +72,7 @@ async function loadConfigModule(configPath: string): Promise<ReactTabibConfig> {
     return (module.exports.default ?? module.exports) as ReactTabibConfig;
   }
 
-  const required = require(configPath);
+  const required = requireFromHere(configPath);
   return (required.default ?? required) as ReactTabibConfig;
 }
 

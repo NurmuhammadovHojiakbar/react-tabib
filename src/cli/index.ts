@@ -27,8 +27,25 @@ export async function runCli(argv: string[]): Promise<number> {
   program.parse(argv);
   const rawOptions = program.opts<Record<string, unknown>>();
   const options: CliOptions = {
-    ...(rawOptions as CliOptions),
+    path: typeof rawOptions.path === 'string' ? rawOptions.path : '.',
+    format:
+      typeof rawOptions.format === 'string'
+        ? (rawOptions.format as CliOptions['format'])
+        : undefined,
+    json: rawOptions.json === true,
+    severity:
+      typeof rawOptions.severity === 'string'
+        ? (rawOptions.severity as Severity)
+        : undefined,
+    maxWarnings:
+      typeof rawOptions.maxWarnings === 'number' ? rawOptions.maxWarnings : undefined,
+    ignore: Array.isArray(rawOptions.ignore)
+      ? rawOptions.ignore.filter((value): value is string => typeof value === 'string')
+      : undefined,
+    config: typeof rawOptions.config === 'string' ? rawOptions.config : undefined,
     noColor: rawOptions.color === false,
+    debug: rawOptions.debug === true,
+    summaryOnly: rawOptions.summaryOnly === true,
   };
 
   if (options.severity && !isSeverity(options.severity)) {
