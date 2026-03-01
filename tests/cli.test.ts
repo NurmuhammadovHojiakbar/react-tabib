@@ -115,13 +115,16 @@ describe('pretty reporter', () => {
           Hint: Return a cleanup function.
 
       Overview
-        Severity: critical=1, high=0, medium=0, low=0
-        Categories: timers=1
-        Rules triggered: use-effect-timer-cleanup
+        Critical ██████████████████ 1
+        High     ░░░░░░░░░░░░░░░░░░ 0
+        Medium   ░░░░░░░░░░░░░░░░░░ 0
+        Low      ░░░░░░░░░░░░░░░░░░ 0
+        Categories  timers:■■■■■1
+        Rules       use-effect-timer-cleanup
       Next actions
-        Fix critical/high findings first.
-        Re-run with --top to focus on the highest-risk items.
-        Use --files-with-issues for quick targeted cleanup."
+        [1] Fix critical/high findings first.
+        [2] Review medium findings next and confirm any heuristics.
+        [3] Use --files-with-issues for quick targeted cleanup."
     `);
   });
 });

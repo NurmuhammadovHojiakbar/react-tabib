@@ -83,16 +83,45 @@ export function renderPrettyReport(
 
   lines.push(useColor ? pc.bold('Overview') : 'Overview');
   lines.push(
-    `  Severity: critical=${result.summary.bySeverity.critical}, high=${result.summary.bySeverity.high}, medium=${result.summary.bySeverity.medium}, low=${result.summary.bySeverity.low}`,
+    renderBarLine(
+      'Critical',
+      result.summary.bySeverity.critical,
+      maxSeverityCount(result),
+      'critical',
+      useColor,
+    ),
   );
   lines.push(
-    `  Categories: ${
-      Object.entries(result.summary.byCategory)
-        .map(([category, count]) => `${category}=${count}`)
-        .join(', ') || 'none'
-    }`,
+    renderBarLine(
+      'High',
+      result.summary.bySeverity.high,
+      maxSeverityCount(result),
+      'high',
+      useColor,
+    ),
   );
-  lines.push(`  Rules triggered: ${result.rulesTriggered.join(', ') || 'none'}`);
+  lines.push(
+    renderBarLine(
+      'Medium',
+      result.summary.bySeverity.medium,
+      maxSeverityCount(result),
+      'medium',
+      useColor,
+    ),
+  );
+  lines.push(
+    renderBarLine(
+      'Low',
+      result.summary.bySeverity.low,
+      maxSeverityCount(result),
+      'low',
+      useColor,
+    ),
+  );
+  lines.push(
+    `  Categories  ${formatCategoryGraph(result.summary.byCategory, useColor)}`,
+  );
+  lines.push(`  Rules       ${result.rulesTriggered.join(', ') || 'none'}`);
 
   if (result.filesWithErrors.length > 0) {
     lines.push(`  Parse errors: ${result.filesWithErrors.length}`);
@@ -100,12 +129,121 @@ export function renderPrettyReport(
 
   lines.push(useColor ? pc.bold('Next actions') : 'Next actions');
   if (result.findings.length === 0) {
-    lines.push('  No findings. Wire this into CI and keep the baseline clean.');
+    lines.push(
+      `  ${colorActionBullet('ready', useColor)} ${colorActionText(
+        'No findings. Wire this into CI and keep the baseline clean.',
+        'low',
+        useColor,
+      )}`,
+    );
   } else {
-    lines.push('  Fix critical/high findings first.');
-    lines.push('  Re-run with --top to focus on the highest-risk items.');
-    lines.push('  Use --files-with-issues for quick targeted cleanup.');
+    lines.push(
+      `  ${colorActionBullet('1', useColor)} ${colorActionText(
+        'Fix critical/high findings first.',
+        'critical',
+        useColor,
+      )}`,
+    );
+    lines.push(
+      `  ${colorActionBullet('2', useColor)} ${colorActionText(
+        'Review medium findings next and confirm any heuristics.',
+        'medium',
+        useColor,
+      )}`,
+    );
+    lines.push(
+      `  ${colorActionBullet('3', useColor)} ${colorActionText(
+        'Use --files-with-issues for quick targeted cleanup.',
+        'low',
+        useColor,
+      )}`,
+    );
   }
 
   return lines.join('\n');
+}
+
+function maxSeverityCount(result: AnalyzerResult): number {
+  return Math.max(
+    result.summary.bySeverity.critical,
+    result.summary.bySeverity.high,
+    result.summary.bySeverity.medium,
+    result.summary.bySeverity.low,
+    1,
+  );
+}
+
+function renderBarLine(
+  label: string,
+  count: number,
+  max: number,
+  severity: Finding['severity'],
+  useColor: boolean,
+): string {
+  const width = 18;
+  const filled = Math.round((count / max) * width);
+  const bar = `${'█'.repeat(filled)}${'░'.repeat(Math.max(0, width - filled))}`;
+  const tintedBar = tintBySeverity(bar, severity, useColor);
+  const tintedLabel = tintBySeverity(label.padEnd(8, ' '), severity, useColor);
+
+  return `  ${tintedLabel} ${tintedBar} ${count}`;
+}
+
+function formatCategoryGraph(
+  categories: Record<string, number>,
+  useColor: boolean,
+): string {
+  const entries = Object.entries(categories);
+  if (entries.length === 0) {
+    return 'none';
+  }
+
+  const max = Math.max(...entries.map(([, count]) => count), 1);
+  return entries
+    .map(([category, count]) => {
+      const blocks = Math.max(1, Math.round((count / max) * 5));
+      const graph = tintBySeverity('■'.repeat(blocks), 'medium', useColor);
+      return `${category}:${graph}${count}`;
+    })
+    .join('  ');
+}
+
+function colorActionBullet(
+  label: string,
+  useColor: boolean,
+): string {
+  if (!useColor) {
+    return `[${label}]`;
+  }
+
+  return pc.bgBlue(pc.white(` ${label} `));
+}
+
+function colorActionText(
+  text: string,
+  severity: Finding['severity'],
+  useColor: boolean,
+): string {
+  return tintBySeverity(text, severity, useColor);
+}
+
+function tintBySeverity(
+  text: string,
+  severity: Finding['severity'],
+  useColor: boolean,
+): string {
+  if (!useColor) {
+    return text;
+  }
+
+  switch (severity) {
+    case 'critical':
+      return pc.red(pc.bold(text));
+    case 'high':
+      return pc.red(text);
+    case 'medium':
+      return pc.yellow(text);
+    default:
+      return pc.cyan(text);
+  }
 }
