@@ -25,13 +25,13 @@ The current implementation intentionally separates high-confidence checks from h
 Run directly with `npx` after publishing:
 
 ```bash
-npx @hojiakbar/react-tabib
+npx @boychibor/react-tabib
 ```
 
 Or install locally:
 
 ```bash
-npm install --save-dev @hojiakbar/react-tabib
+npm install --save-dev @boychibor/react-tabib
 ```
 
 After local installation, the executable is still `react-tabib` because the package keeps that `bin` name.
@@ -39,15 +39,15 @@ After local installation, the executable is still `react-tabib` because the pack
 ## Usage
 
 ```bash
-npx @hojiakbar/react-tabib
-npx @hojiakbar/react-tabib --path ./src
-npx @hojiakbar/react-tabib --format compact
-npx @hojiakbar/react-tabib --json
-npx @hojiakbar/react-tabib --severity high
-npx @hojiakbar/react-tabib --max-warnings 0
-npx @hojiakbar/react-tabib --ignore "storybook/**"
-npx @hojiakbar/react-tabib --config react-tabib.config.ts
-npx @hojiakbar/react-tabib --summary-only
+npx @boychibor/react-tabib
+npx @boychibor/react-tabib --path ./src
+npx @boychibor/react-tabib --format compact
+npx @boychibor/react-tabib --json
+npx @boychibor/react-tabib --severity high
+npx @boychibor/react-tabib --max-warnings 0
+npx @boychibor/react-tabib --ignore "storybook/**"
+npx @boychibor/react-tabib --config react-tabib.config.ts
+npx @boychibor/react-tabib --summary-only
 ```
 
 If the package is installed in the current project, you can also run:
@@ -74,7 +74,7 @@ npx react-tabib
 Create `react-tabib.config.ts` or `react-tabib.config.js`:
 
 ```ts
-import type { ReactTabibConfig } from '@hojiakbar/react-tabib';
+import type { ReactTabibConfig } from '@boychibor/react-tabib';
 
 const config: ReactTabibConfig = {
   ignore: ['storybook/**'],
@@ -193,7 +193,7 @@ Heuristic:
 Use JSON output for machine parsing and fail on high-severity issues:
 
 ```bash
-npx @hojiakbar/react-tabib --json --severity high --max-warnings 0
+npx @boychibor/react-tabib --json --severity high --max-warnings 0
 ```
 
 ## Limitations
@@ -215,7 +215,7 @@ npm publish --access public
 
 Before publishing:
 
-- Make sure the scoped package name `@hojiakbar/react-tabib` is available to your npm account
+- Make sure the scoped package name `@boychibor/react-tabib` is available to your npm org or account permissions
 - Bump `version` in `package.json`
 - Verify the `bin` entry points to `dist/cli.js`
 
