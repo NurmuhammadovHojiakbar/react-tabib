@@ -15,6 +15,10 @@ export const allRules: Rule[] = [
   lifecycleMisuseRule,
 ];
 
+export function getRuleById(ruleId: string): Rule | undefined {
+  return allRules.find((rule) => rule.meta.id === ruleId);
+}
+
 export function getActiveRules(rules: Rule[], config: { enabledRules: string[] | null; disabledRules: string[]; experimentalRules: boolean }): Rule[] {
   return rules.filter((rule) => {
     if (rule.meta.experimental && !config.experimentalRules) {

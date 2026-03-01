@@ -6,7 +6,7 @@ export const defaultConfig: ReactTabibResolvedConfig = {
   enabledRules: null,
   disabledRules: [],
   severityOverrides: {},
-  reporter: 'table',
+  reporter: 'pretty',
   ci: false,
   experimentalRules: false,
   failOnSeverity: 'high',

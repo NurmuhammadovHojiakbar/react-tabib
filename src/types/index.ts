@@ -70,7 +70,7 @@ export interface ReactTabibConfig {
   enabledRules?: string[];
   disabledRules?: string[];
   severityOverrides?: Partial<Record<string, Severity>>;
-  reporter?: 'table' | 'compact' | 'json';
+  reporter?: 'table' | 'compact' | 'json' | 'pretty';
   ci?: boolean;
   experimentalRules?: boolean;
   failOnSeverity?: Severity;
@@ -83,7 +83,7 @@ export interface ReactTabibResolvedConfig {
   enabledRules: string[] | null;
   disabledRules: string[];
   severityOverrides: Partial<Record<string, Severity>>;
-  reporter: 'table' | 'compact' | 'json';
+  reporter: 'table' | 'compact' | 'json' | 'pretty';
   ci: boolean;
   experimentalRules: boolean;
   failOnSeverity: Severity;
@@ -92,7 +92,7 @@ export interface ReactTabibResolvedConfig {
 
 export interface CliOptions {
   path: string;
-  format?: 'table' | 'compact' | 'json';
+  format?: 'table' | 'compact' | 'json' | 'pretty';
   json?: boolean;
   severity?: Severity;
   maxWarnings?: number;
@@ -101,6 +101,17 @@ export interface CliOptions {
   noColor?: boolean;
   debug?: boolean;
   summaryOnly?: boolean;
+  top?: number;
+  filesWithIssues?: boolean;
+  explain?: string;
+  noBanner?: boolean;
+}
+
+export interface ReportMeta {
+  elapsedMs: number;
+  riskScore: number;
+  totalFindings: number;
+  visibleFindings: number;
 }
 
 export interface EffectDescriptor {

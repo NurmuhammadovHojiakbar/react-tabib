@@ -1,9 +1,14 @@
-import type { AnalyzerResult } from '../types';
+import type { AnalyzerResult, ReportMeta } from '../types';
 
-export function renderJsonReport(result: AnalyzerResult, rootPath: string): string {
+export function renderJsonReport(
+  result: AnalyzerResult,
+  rootPath: string,
+  meta?: ReportMeta,
+): string {
   return JSON.stringify(
     {
       rootPath,
+      meta,
       ...result,
     },
     null,

@@ -2,6 +2,8 @@
 
 `react-tabib` is a production-oriented static analysis CLI for React codebases. It scans JavaScript and TypeScript React files, looks for likely memory leaks and lifecycle misuse, and reports both high-confidence issues and heuristic risks before they reach production.
 
+The default terminal output uses the `pretty` reporter. You only need `--format` when you want `table`, `compact`, or `json`.
+
 ## What it checks
 
 - Timers created in `useEffect` without `clearInterval`, `clearTimeout`, `cancelAnimationFrame`, or `cancelIdleCallback`
@@ -45,6 +47,9 @@ npx @boychibor/react-tabib --format compact
 npx @boychibor/react-tabib --json
 npx @boychibor/react-tabib --severity high
 npx @boychibor/react-tabib --max-warnings 0
+npx @boychibor/react-tabib --top 10
+npx @boychibor/react-tabib --files-with-issues
+npx @boychibor/react-tabib --explain event-listener-cleanup
 npx @boychibor/react-tabib --ignore "storybook/**"
 npx @boychibor/react-tabib --config react-tabib.config.ts
 npx @boychibor/react-tabib --summary-only
@@ -60,14 +65,18 @@ npx react-tabib
 
 - `--path <dir>`: scan a custom directory
 - `--json`: emit JSON instead of terminal text
-- `--format <table|compact|json>`: choose reporter format
+- `--format <table|pretty|compact|json>`: choose a non-default reporter format
 - `--severity <level>`: set the minimum displayed severity and fail threshold
 - `--max-warnings <count>`: fail if findings exceed the limit
+- `--top <count>`: optionally limit output to the highest-risk findings; by default all findings are shown
+- `--files-with-issues`: print only file paths with findings
+- `--explain <rule-id>`: explain what a rule checks and how to fix it
 - `--ignore <glob>`: add an ignore pattern
 - `--config <path>`: load a config file
 - `--no-color`: disable ANSI colors
+- `--no-banner`: remove the pretty report header
 - `--debug`: print resolved metadata to stderr
-- `--summary-only`: only print summary information in table format
+- `--summary-only`: only print summary information in table or pretty format
 
 ## Config file
 
@@ -99,22 +108,27 @@ Use suppressions sparingly and only after reviewing the finding.
 
 ## Example terminal output
 
-```text
-src/App.tsx
-  CRITICAL 24:3 event-listener-cleanup (high)
-    window adds an event listener in useEffect without a matching removal.
-    Why: The listener can accumulate on every render and keep component closures alive.
-    Fix: Return a cleanup function that calls removeEventListener with the same target and handler.
+`pretty` mode includes a banner, elapsed time, visible vs total findings, and a risk score:
 
-Summary
-  Files scanned: 12
-  Findings: 4
-  Severity counts: critical=1, high=2, medium=1, low=0
+```text
+react-tabib
+Scan target: /repo
+Files: 12  Findings: 4/4  Risk Score: 72/100  Time: 38ms
+
+src/App.tsx
+  ! [CRITICAL] 24:3 event-listener-cleanup [high]
+    window adds an event listener in useEffect without a matching removal.
+    Why it matters: The listener can accumulate on every render and keep component closures alive.
+    Suggested fix: Return a cleanup function that calls removeEventListener with the same target and handler.
+
+Overview
+  Severity: critical=1, high=2, medium=1, low=0
   Categories: events=1, timers=1, subscriptions=1, async=1
   Rules triggered: event-listener-cleanup, use-effect-timer-cleanup, subscription-cleanup, async-unmount-update
-Recommended next actions
-  Address critical/high issues first, then add suppressions only for reviewed false positives.
-  Re-run after fixes and consider enabling the JSON report in CI.
+Next actions
+  Fix critical/high findings first.
+  Re-run with --top to focus on the highest-risk items.
+  Use --files-with-issues for quick targeted cleanup.
 ```
 
 ## Example JSON output

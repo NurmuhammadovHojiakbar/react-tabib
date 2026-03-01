@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { renderPrettyReport } from '../src/reporters/prettyReporter';
 import { renderTableReport } from '../src/reporters/tableReporter';
-import type { AnalyzerResult } from '../src/types';
+import type { AnalyzerResult, ReportMeta } from '../src/types';
 
 describe('table reporter', () => {
   it('renders a summary and recommended actions', () => {
@@ -54,6 +55,73 @@ describe('table reporter', () => {
       Recommended next actions
         Address critical/high issues first, then add suppressions only for reviewed false positives.
         Re-run after fixes and consider enabling the JSON report in CI."
+    `);
+  });
+});
+
+describe('pretty reporter', () => {
+  it('renders banner metadata and next actions', () => {
+    const result: AnalyzerResult = {
+      findings: [
+        {
+          ruleId: 'use-effect-timer-cleanup',
+          category: 'timers',
+          severity: 'critical',
+          confidence: 'high',
+          filePath: '/repo/src/Leak.tsx',
+          line: 12,
+          column: 11,
+          snippet: 'const timer = setInterval(work, 1000);',
+          explanation: 'setInterval is created without cleanup.',
+          impact: 'The timer can continue after unmount.',
+          suggestion: 'Call clearInterval in cleanup.',
+          autofixHint: 'Return a cleanup function.',
+        },
+      ],
+      filesScanned: 3,
+      filesWithErrors: [],
+      skippedFiles: 0,
+      rulesTriggered: ['use-effect-timer-cleanup'],
+      summary: {
+        bySeverity: {
+          low: 0,
+          medium: 0,
+          high: 0,
+          critical: 1,
+        },
+        byCategory: {
+          timers: 1,
+        },
+      },
+    };
+    const meta: ReportMeta = {
+      elapsedMs: 42,
+      riskScore: 88,
+      totalFindings: 4,
+      visibleFindings: 1,
+    };
+
+    expect(renderPrettyReport(result, '/repo', false, meta)).toMatchInlineSnapshot(`
+      "react-tabib
+      Scan target: /repo
+      Files: 3  Findings: 1/4  Risk Score: 88/100  Time: 42ms
+
+      src/Leak.tsx
+        ! [CRITICAL] 12:11 use-effect-timer-cleanup [high]
+          setInterval is created without cleanup.
+          Why it matters: The timer can continue after unmount.
+          Suggested fix: Call clearInterval in cleanup.
+          Code: const timer = setInterval(work, 1000);
+          Hint: Return a cleanup function.
+
+      Overview
+        Severity: critical=1, high=0, medium=0, low=0
+        Categories: timers=1
+        Rules triggered: use-effect-timer-cleanup
+      Next actions
+        Fix critical/high findings first.
+        Re-run with --top to focus on the highest-risk items.
+        Use --files-with-issues for quick targeted cleanup."
     `);
   });
 });

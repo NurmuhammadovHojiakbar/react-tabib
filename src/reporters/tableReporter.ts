@@ -1,6 +1,6 @@
 import path from 'node:path';
 import pc from 'picocolors';
-import type { AnalyzerResult, Finding } from '../types';
+import type { AnalyzerResult, Finding, ReportMeta } from '../types';
 
 function formatSeverity(severity: Finding['severity'], color: boolean): string {
   if (!color) {
@@ -24,6 +24,7 @@ export function renderTableReport(
   rootPath: string,
   useColor: boolean,
   summaryOnly = false,
+  meta?: ReportMeta,
 ): string {
   const lines: string[] = [];
   const grouped = new Map<string, Finding[]>();
@@ -56,6 +57,13 @@ export function renderTableReport(
   lines.push('Summary');
   lines.push(`  Files scanned: ${result.filesScanned}`);
   lines.push(`  Findings: ${result.findings.length}`);
+  if (meta) {
+    lines.push(`  Risk score: ${meta.riskScore}/100`);
+    lines.push(`  Time: ${meta.elapsedMs}ms`);
+    if (meta.visibleFindings !== meta.totalFindings) {
+      lines.push(`  Visible findings: ${meta.visibleFindings}/${meta.totalFindings}`);
+    }
+  }
   lines.push(
     `  Severity counts: critical=${result.summary.bySeverity.critical}, high=${result.summary.bySeverity.high}, medium=${result.summary.bySeverity.medium}, low=${result.summary.bySeverity.low}`,
   );
