@@ -204,7 +204,7 @@ export function isClearedByGlobalCleanup(
   identifierArg: string | null,
 ): boolean {
   return findCalls(statements, (call) => {
-    if (!t.isIdentifier(call.callee, { name: cleanupName })) {
+    if (!isGlobalFunctionCall(call.callee, cleanupName)) {
       return false;
     }
 
@@ -215,6 +215,25 @@ export function isClearedByGlobalCleanup(
     const firstArg = call.arguments[0];
     return getIdentifierName(t.isExpression(firstArg) ? firstArg : null) === identifierArg;
   }).length > 0;
+}
+
+function isGlobalFunctionCall(
+  callee: t.CallExpression['callee'],
+  functionName: string,
+): boolean {
+  if (t.isIdentifier(callee, { name: functionName })) {
+    return true;
+  }
+
+  if (
+    t.isMemberExpression(callee) &&
+    t.isIdentifier(callee.property, { name: functionName })
+  ) {
+    const objectName = getIdentifierName(callee.object);
+    return objectName === 'window' || objectName === 'globalThis' || objectName === 'self';
+  }
+
+  return false;
 }
 
 export function hasCleanupReturn(effect: EffectDescriptor): boolean {

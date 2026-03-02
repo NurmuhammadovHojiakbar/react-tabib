@@ -22,6 +22,13 @@ describe('analyzeFiles', () => {
     expect(result.findings).toEqual([]);
   });
 
+  it('accepts global timer cleanup calls', async () => {
+    const filePath = path.resolve('tests/fixtures/windowCleanupComponent.tsx');
+    const result = await analyzeFiles([filePath], defaultConfig);
+
+    expect(result.findings).toEqual([]);
+  });
+
   it('honors file suppression comments', async () => {
     const suppressedPath = path.resolve('tests/fixtures/suppressed.tsx');
     const result = await analyzeFiles([suppressedPath], defaultConfig);
