@@ -42,6 +42,20 @@ export const asyncUnmountRule: Rule = {
           }
         },
         CallExpression(path) {
+          // Only flag state updates that are inside a .then() / async callback,
+          // not synchronous updates that happen at the top level of the effect.
+          const isInsideAsyncCallback =
+            path.findParent(
+              (p) =>
+                p.isArrowFunctionExpression() ||
+                p.isFunctionExpression() ||
+                p.isFunctionDeclaration(),
+            ) !== null;
+
+          if (!isInsideAsyncCallback) {
+            return;
+          }
+
           const calleeName = getIdentifierName(path.node.callee);
           if (calleeName && setters.has(calleeName)) {
             updatesStateInsideAsync = true;
@@ -49,10 +63,12 @@ export const asyncUnmountRule: Rule = {
         },
       });
 
+      // If an AbortController exists, it guards both the fetch and any chained
+      // .then() handlers, so the combination is considered safe.
       const isRiskyAsync =
         effect.callbackAsync ||
         (fetchCalls.length > 0 && !hasAbortController) ||
-        (thenCalls.length > 0 && updatesStateInsideAsync);
+        (thenCalls.length > 0 && updatesStateInsideAsync && !hasAbortController);
 
       if (!isRiskyAsync) {
         continue;

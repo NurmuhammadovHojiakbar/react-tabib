@@ -37,7 +37,10 @@ export const useEffectTimerCleanupRule: Rule = {
           continue;
         }
 
-        const calleeName = getIdentifierName(declaration.init.callee);
+        const rawCalleeName = getIdentifierName(declaration.init.callee);
+        // Normalise window./globalThis./self. prefix so `window.setInterval` is
+        // treated the same as `setInterval`.
+        const calleeName = rawCalleeName?.replace(/^(?:window|globalThis|self)\./, '') ?? null;
         const cleanupName = calleeName ? TIMER_FACTORIES.get(calleeName) : null;
         if (!cleanupName) {
           continue;
@@ -85,7 +88,8 @@ export const useEffectTimerCleanupRule: Rule = {
         }
 
         const call = statement.expression;
-        const calleeName = getIdentifierName(call.callee);
+        const rawCallee = getIdentifierName(call.callee);
+        const calleeName = rawCallee?.replace(/^(?:window|globalThis|self)\./, '') ?? null;
         if (!calleeName || !TIMER_FACTORIES.has(calleeName)) {
           continue;
         }

@@ -34,4 +34,10 @@ describe('analyzeFiles', () => {
     const result = await analyzeFiles([suppressedPath], defaultConfig);
     expect(result.findings).toEqual([]);
   });
+
+  it('does not flag expression-body cleanup arrow functions', async () => {
+    const filePath = path.resolve('tests/fixtures/expressionCleanupComponent.tsx');
+    const result = await analyzeFiles([filePath], defaultConfig);
+    expect(result.findings).toEqual([]);
+  });
 });

@@ -35,30 +35,67 @@ export function collectEffects(ast: t.File): EffectDescriptor[] {
   return effects;
 }
 
+const EFFECT_HOOK_NAMES = new Set(['useEffect', 'useLayoutEffect']);
+
 function isUseEffectCall(node: t.CallExpression): boolean {
-  if (t.isIdentifier(node.callee, { name: 'useEffect' })) {
+  if (t.isIdentifier(node.callee) && EFFECT_HOOK_NAMES.has(node.callee.name)) {
     return true;
   }
 
   return (
     t.isMemberExpression(node.callee) &&
     t.isIdentifier(node.callee.object, { name: 'React' }) &&
-    t.isIdentifier(node.callee.property, { name: 'useEffect' })
+    t.isIdentifier(node.callee.property) &&
+    EFFECT_HOOK_NAMES.has(node.callee.property.name)
   );
 }
 
 function getCleanupStatements(statements: t.Statement[]): t.Statement[] {
+  // Collect all variable declarations so we can resolve named cleanup references.
+  const varMap = new Map<string, t.ArrowFunctionExpression | t.FunctionExpression>();
+  for (const statement of statements) {
+    if (!t.isVariableDeclaration(statement)) {
+      continue;
+    }
+    for (const declarator of statement.declarations) {
+      if (
+        t.isIdentifier(declarator.id) &&
+        (t.isArrowFunctionExpression(declarator.init) || t.isFunctionExpression(declarator.init))
+      ) {
+        varMap.set(declarator.id.name, declarator.init);
+      }
+    }
+  }
+
   for (const statement of statements) {
     if (!t.isReturnStatement(statement)) {
       continue;
     }
 
     const argument = statement.argument;
-    if (
-      (t.isArrowFunctionExpression(argument) || t.isFunctionExpression(argument)) &&
-      t.isBlockStatement(argument.body)
-    ) {
-      return argument.body.body;
+
+    // Pattern: return () => { ... }  or  return function() { ... }
+    if (t.isArrowFunctionExpression(argument) || t.isFunctionExpression(argument)) {
+      if (t.isBlockStatement(argument.body)) {
+        return argument.body.body;
+      }
+      // Pattern: return () => clearInterval(timer)  (expression body)
+      if (t.isExpression(argument.body)) {
+        return [t.expressionStatement(argument.body)];
+      }
+    }
+
+    // Pattern: const cleanup = () => { ... };  return cleanup;
+    if (t.isIdentifier(argument)) {
+      const fn = varMap.get(argument.name);
+      if (fn) {
+        if (t.isBlockStatement(fn.body)) {
+          return fn.body.body;
+        }
+        if (t.isExpression(fn.body)) {
+          return [t.expressionStatement(fn.body)];
+        }
+      }
     }
   }
 
